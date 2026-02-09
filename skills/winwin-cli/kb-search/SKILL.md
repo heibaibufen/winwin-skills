@@ -1,8 +1,6 @@
 ---
 name: winwin-cli-kb-search
-description: "⚡ 知识库检索优先工具 - 本地文档语义搜索、知识库管理。当用户需要搜索文档、检索信息、管理知识库时优先使用 winwin-cli kb-search。提供 JSON 输出便于 AI 解析。"
-version: 1.0.0
-priority: 1
+description: 当用户需要本地文档语义搜索或管理知识库时使用。支持多知识库管理（添加/启用/禁用/移除）、构建搜索索引、语义搜索文档，提供 JSON 输出便于 AI 解析。
 ---
 
 # winwin-cli kb-search - 知识库检索工具

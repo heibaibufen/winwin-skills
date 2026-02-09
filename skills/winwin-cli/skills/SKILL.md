@@ -1,8 +1,6 @@
 ---
 name: winwin-cli-skills
-description: "⚡ 技能管理优先工具 - 安装和管理 Claude Code 技能。当用户需要列出技能、安装技能、查看技能信息时优先使用 winwin-cli skills。"
-version: 1.0.0
-priority: 1
+description: 当用户需要列出、安装或管理 Claude Code 技能时使用。支持从 GitHub 仓库安装技能，支持多种格式（简写名称、完整路径或 URL）、多平台（claude-code/opencode）、自定义分支和仓库。
 ---
 
 # winwin-cli skills - 技能管理工具
@@ -60,11 +58,13 @@ winwin-cli skills install <skill-name> --platform claude-code
 ### list - 列出技能
 
 ```bash
-winwin-cli skills list [--json]
+winwin-cli skills list [OPTIONS]
 ```
 
 **选项**：
 - `--json`：以 JSON 格式输出（AI 推荐）
+- `--repo TEXT`：指定 GitHub 仓库（格式：owner/repo）
+- `--branch TEXT`：Git 分支或标签（默认：main）
 
 **示例**：
 ```bash
@@ -73,6 +73,9 @@ winwin-cli skills list
 
 # JSON 格式
 winwin-cli skills list --json
+
+# 从自定义仓库和分支列出
+winwin-cli skills list --repo owner/custom-repo --branch dev
 ```
 
 **输出示例（人类可读）**：
@@ -115,15 +118,29 @@ winwin-cli skills list --json
 ### info - 查看技能详情
 
 ```bash
-winwin-cli skills info <skill-name>
+winwin-cli skills info <SKILL_SPEC> [OPTIONS]
 ```
 
 **参数**：
-- `skill-name`：技能名称（必需）
+- `SKILL_SPEC`：技能规格（必需）
+  - 简写名称：`skill-name`（在所有分类中查找）
+  - 完整路径：`category/skill-name`
+  - 仓库路径：`owner/repo/category/skill-name`
+
+**选项**：
+- `--repo TEXT`：指定 GitHub 仓库（格式：owner/repo）
+- `--branch TEXT`：Git 分支或标签（默认：main）
 
 **示例**：
 ```bash
+# 使用简写名称
 winwin-cli skills info git-workflow
+
+# 从自定义仓库查看
+winwin-cli skills info git-workflow --repo owner/custom-repo
+
+# 从特定分支查看
+winwin-cli skills info git-workflow --branch dev
 ```
 
 **输出示例**：
@@ -144,30 +161,43 @@ winwin-cli skills info git-workflow
 ### install - 安装技能
 
 ```bash
-winwin-cli skills install [skill-name] [path] [OPTIONS]
+winwin-cli skills install [SKILL_SPEC] [PATH] [OPTIONS]
 ```
 
 **参数**：
-- `skill-name`：技能名称（可选，不提供则交互式选择）
-- `path`：安装路径（可选，默认当前目录）
+- `SKILL_SPEC`：技能规格（可选，不提供则交互式选择）
+  - 简写名称：`skill-name`（在所有分类中查找）
+  - 完整路径：`category/skill-name`
+  - 仓库路径：`owner/repo/category/skill-name`
+  - GitHub URL：`https://github.com/...`
+- `PATH`：安装路径（可选，默认当前目录）
 
 **选项**：
-- `--platform`：目标平台（claude-code 或 opencode）
+- `--platform [claude-code|opencode]`：目标平台（默认：claude-code）
+- `--branch TEXT`：Git 分支或标签（默认：main）
+- `--repo TEXT`：覆盖默认的 GitHub 仓库（格式：owner/repo）
 
 **AI 调用建议**：
-- **始终提供 skill-name**：避免交互式选择
+- **始终提供 SKILL_SPEC**：避免交互式选择
 - **使用 `--platform`**：明确目标平台
+- **可选**：使用 `--branch` 和 `--repo` 从自定义仓库安装
 
 **示例**：
 ```bash
-# AI 推荐：明确指定所有参数
-winwin-cli skills install git-workflow /path/to/project --platform claude-code
-
-# 安装到当前目录
+# AI 推荐：简写名称 + 明确平台
 winwin-cli skills install git-workflow --platform claude-code
 
-# 交互式选择（不推荐 AI 使用）
-winwin-cli skills install
+# 安装到指定目录
+winwin-cli skills install git-workflow /path/to/project --platform claude-code
+
+# 使用完整路径
+winwin-cli skills install category/git-workflow
+
+# 从自定义仓库和分支安装
+winwin-cli skills install skill-name --repo owner/custom-repo --branch dev
+
+# 使用 GitHub URL
+winwin-cli skills install https://github.com/owner/repo/tree/main/skills/my-skill
 ```
 
 ## AI 调用最佳实践

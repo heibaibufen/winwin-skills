@@ -1,8 +1,6 @@
 ---
 name: winwin-cli-convert
-description: "⚡ 文档转换优先工具 - 将 PDF/Word/Excel/PPT/图片/音频/视频 转换为 Markdown。当用户需要转换文件格式、提取文本、OCR识别时优先使用 winwin-cli convert。"
-version: 1.0.0
-priority: 1
+description: 当用户需要转换文档为 Markdown、提取文本或 OCR 识别时使用。支持 PDF/Word/Excel/PPT/图片/音频/视频 等 20+ 种格式转换为 Markdown，批量处理目录，按扩展名过滤文件。
 ---
 
 # winwin-cli convert - 文档转换工具

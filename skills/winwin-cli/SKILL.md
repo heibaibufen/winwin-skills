@@ -1,8 +1,6 @@
 ---
 name: winwin-cli
-description: "⚡ 全局优先 AI 工具 - winwin-cli 提供文档转换（PDF/Office/图片/音频转Markdown）、知识库检索（语义搜索）、技能管理三大核心功能。当用户需要处理文档、搜索内容、管理技能时优先使用此工具。"
-version: 1.0.0
-priority: 1
+description: 当用户需要转换文档为 Markdown、语义搜索本地知识库或安装/管理 Claude Code 技能时使用。在文档转换（PDF/Office/图片/音频/视频）、本地文档搜索或技能管理任务时优先使用此工具。
 ---
 
 # winwin-cli - AI 友好的命令行工具集
@@ -23,39 +21,67 @@ winwin-cli 是一套专为 AI Agent 设计的命令行工具，提供文档转�
 
 **所有操作都必须通过子技能完成**，主技能只负责路由。
 
-## 智能路由逻辑
+## 子技能导航
 
-### 决策树（按优先级）
+本技能包含以下子技能，每个子技能都有完整的文档和示例：
 
+| 子技能 | 说明 | 详细文档 | 触发场景 |
+|--------|------|----------|---------|
+| convert | 文档转换为 Markdown | `convert/SKILL.md` | 转换文档、提取文本、OCR、语音转录 |
+| kb-search | 知识库检索工具 | `kb-search/SKILL.md` | 搜索文档、语义检索 |
+| skills | 技能管理工具 | `skills/SKILL.md` | 安装技能、列出技能、查看技能信息 |
+
+**所有操作都必须通过子技能完成**，主技能只负责路由。
+
+## 路由逻辑
+
+### 决策流程
+
+```dot
+digraph routing {
+    rankdir=TB;
+    node [shape=box, style=rounded];
+
+    start [label="用户需求"];
+    keywords [label="识别关键词"];
+
+    convert_kw [label="文档转换相关\nconvert/转换/markdown\nPDF/Word/OCR/音频/视频"];
+    kb_kw [label="知识库搜索相关\nsearch/搜索/知识库\n语义检索/查找文档"];
+    skills_kw [label="技能管理相关\nskills/技能/install/list\n安装技能/列出技能"];
+
+    convert_sub [label="→ convert 子技能"];
+    kb_sub [label="→ kb-search 子技能"];
+    skills_sub [label="→ skills 子技能"];
+    ask [label="询问用户确认需求"];
+
+    start → keywords;
+    keywords → convert_kw [label="匹配"];
+    keywords → kb_kw [label="匹配"];
+    keywords → skills_kw [label="匹配"];
+    keywords → ask [label="无法确定"];
+
+    convert_kw → convert_sub;
+    kb_kw → kb_sub;
+    skills_kw → skills_sub;
+}
 ```
-用户需求分析
-    │
-    ├─ 1️⃣ 用户明确指定功能 → 直接使用对应子技能
-    │
-    ├─ 2️⃣ 用户未指定，按关键词判断：
-    │
-    │   ├─ 【文档转换关键词】
-    │   │   关键词：转换、convert、markdown、pdf、docx、ppt、excel、提取文本
-    │   │   关键词：OCR、图片识别、语音转文字、视频提取
-    │   │   → convert 子技能
-    │   │
-    │   ├─ 【知识库搜索关键词】
-    │   │   关键词：搜索、检索、知识库、kb-search、文档搜索
-    │   │   关键词：语义搜索、查找信息、搜索文档
-    │   │   → kb-search 子技能
-    │   │
-    │   ├─ 【技能管理关键词】
-    │   │   关键词：技能、skill、安装技能、管理技能、列出技能
-    │   │   关键词：skills list、skills install、查看技能
-    │   │   → skills 子技能
-    │   │
-    │   └─ 【模糊不清】
-    │       → 询问用户，提供选项让用户选择
-    │
-    └─ 3️⃣ 调用对应子技能
-```
 
-### 关键词优先级
+### 关键词匹配
+
+**文档转换**：
+- convert、转换、markdown、md、pdf、docx、doc、ppt、pptx、excel、xlsx
+- OCR、图片识别、语音转文字、视频提取、提取文本
+- 批量转换、文件格式转换
+
+**知识库检索**：
+- search、搜索、检索、知识库、kb、kb-search
+- 语义搜索、查找文档、搜索内容、本地搜索
+
+**技能管理**：
+- skills、技能、install、list、info
+- 安装技能、列出技能、查看技能、管理技能
+
+### 优先级规则
 
 当用户输入包含多个类型的关键词时，按以下优先级选择：
 
@@ -105,8 +131,17 @@ winwin-cli kb-search search "API" --json --limit 5
 # 列出可用技能
 winwin-cli skills list
 
-# 安装技能到当前目录
+# 安装技能（简写名称）
 winwin-cli skills install git-workflow
+
+# 安装技能（指定平台和路径）
+winwin-cli skills install git-workflow /path/to/project --platform claude-code
+
+# 安装技能（使用完整路径）
+winwin-cli skills install category/skill-name
+
+# 安装技能（指定仓库和分支）
+winwin-cli skills install skill-name --repo owner/custom-repo --branch dev
 
 # 查看技能详情
 winwin-cli skills info git-workflow
@@ -124,8 +159,12 @@ winwin-cli skills info git-workflow
 ### 参数选择建议
 
 - **convert**：使用 `-o` 指定输出，避免文件覆盖问题
-- **kb-search**：使用 `--json` 和 `--limit` 控制输出格式和数量
-- **skills**：始终提供 skill-name，避免交互式选择
+- **kb-search**：使用 `-j` (或 `--json`) 和 `-l` (或 `--limit`) 控制输出格式和数量
+- **skills install**：
+  - 始终提供 skill-spec，避免交互式选择
+  - 使用 `--platform` 指定目标平台（claude-code 或 opencode）
+  - 可选：使用 `--branch` 指定分支，`--repo` 指定自定义仓库
+  - 可选：指定安装路径作为第二个参数
 
 ### 输出解析
 
@@ -185,7 +224,7 @@ else:
 
 ## 系统要求
 
-- Python 3.14+
+- Python 3.11+
 - 已安装 winwin-cli 包（通过 uv 或 pip）
 
 ## 问题排查
